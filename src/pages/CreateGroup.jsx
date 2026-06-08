@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 
 export default function CreateGroup() {
   const { user } = useAuth()
@@ -93,31 +93,37 @@ export default function CreateGroup() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Course Name
-            </label>
-            <input
-              type="text"
+            <label className="block text-sm font-medium text-gray-700 mb-1">Course Name</label>
+            <select
               name="course"
               value={formData.course}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="e.g., Computer Science 101"
-            />
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
+            >
+              <option value="">Select a course</option>
+              <option>Computer Science</option>
+              <option>Mathematics</option>
+              <option>Engineering</option>
+              <option>Business</option>
+              <option>Medicine</option>
+              <option>Law</option>
+              <option>Education</option>
+              <option>Arts</option>
+              <option>Sciences</option>
+              <option>Other</option>
+            </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Topic
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
             <input
               type="text"
               name="topic"
               value={formData.topic}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
               placeholder="e.g., Data Structures"
             />
           </div>

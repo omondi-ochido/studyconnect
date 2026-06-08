@@ -30,3 +30,15 @@ CREATE TABLE memberships (
 
 -- Note: RLS is disabled for development
 -- Enable and configure RLS policies before production deployment
+
+-- Notifications table
+-- Run in Supabase SQL Editor to create notifications table
+--
+-- CREATE TABLE notifications (
+--   id SERIAL PRIMARY KEY,
+--   user_id UUID REFERENCES profiles(id),
+--   message TEXT NOT NULL,
+--   group_id INTEGER REFERENCES study_groups(id),
+--   is_read BOOLEAN DEFAULT FALSE,
+--   created_at TIMESTAMP DEFAULT NOW()
+-- );

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
+import Avatar from '../components/Avatar'
 
 export default function GroupDetails() {
   const { id } = useParams()
@@ -33,7 +34,7 @@ export default function GroupDetails() {
       // Fetch members count
       const { data: membershipData, error: memberError } = await supabase
         .from('memberships')
-        .select('user_id, profiles(full_name)')
+        .select('user_id, profiles(full_name, email)')
         .eq('group_id', id)
 
       if (memberError) throw memberError
@@ -66,6 +67,15 @@ export default function GroupDetails() {
 
       if (error) throw error
 
+      // insert notification for creator
+      await supabase.from('notifications').insert([
+        {
+          user_id: group.creator_id,
+          message: `${user?.user_metadata?.full_name || user.email} joined your group ${group.title}`,
+          group_id: group.id,
+        },
+      ])
+
       setIsMember(true)
       fetchGroupDetails()
     } catch (error) {
@@ -85,6 +95,15 @@ export default function GroupDetails() {
         .eq('user_id', user.id)
 
       if (error) throw error
+
+      // insert notification for creator
+      await supabase.from('notifications').insert([
+        {
+          user_id: group.creator_id,
+          message: `${user?.user_metadata?.full_name || user.email} left your group ${group.title}`,
+          group_id: group.id,
+        },
+      ])
 
       setIsMember(false)
       fetchGroupDetails()
@@ -107,7 +126,7 @@ export default function GroupDetails() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-gray-600">Group not found</p>
+          <p className="text-gray-600 dark:text-gray-300">Group not found</p>
           <button
             onClick={() => navigate('/home')}
             className="mt-4 bg-primary text-white px-4 py-2 rounded-lg"
@@ -122,7 +141,7 @@ export default function GroupDetails() {
   const isFull = group.memberCount >= group.max_members
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <button
           onClick={() => navigate('/home')}
@@ -131,14 +150,14 @@ export default function GroupDetails() {
           ← Back to Groups
         </button>
 
-        <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 mb-6 border border-gray-200 dark:border-slate-700">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{group.title}</h1>
+              <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100 mb-2">{group.title}</h1>
               <p className="text-xl text-primary font-semibold">{group.course}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600">Members</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Members</p>
               <p className="text-3xl font-bold text-primary">
                 {group.memberCount}/{group.max_members}
               </p>
@@ -147,22 +166,22 @@ export default function GroupDetails() {
 
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div>
-              <p className="text-sm text-gray-600 mb-2">Topic</p>
-              <p className="text-lg text-gray-900">{group.topic}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Topic</p>
+              <p className="text-lg text-slate-800 dark:text-slate-100">{group.topic}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-2">Location</p>
-              <p className="text-lg text-gray-900">{group.location}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Location</p>
+              <p className="text-lg text-slate-800 dark:text-slate-100">{group.location}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-2">Date & Time</p>
-              <p className="text-lg text-gray-900">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Date & Time</p>
+              <p className="text-lg text-slate-800 dark:text-slate-100">
                 {new Date(group.date_time).toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600 mb-2">Created by</p>
-              <p className="text-lg text-gray-900">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Created by</p>
+              <p className="text-lg text-slate-800 dark:text-slate-100">
                 {group.creator_id === user?.id ? 'You' : 'Another user'}
               </p>
             </div>
@@ -179,7 +198,7 @@ export default function GroupDetails() {
           )}
 
           {!isMember && isFull && (
-            <div className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg text-center font-semibold">
+            <div className="w-full bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 py-3 rounded-lg text-center font-semibold">
               Group is Full
             </div>
           )}
@@ -196,18 +215,18 @@ export default function GroupDetails() {
         </div>
 
         {members.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Members</h2>
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-8 border border-gray-200 dark:border-slate-700">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6">Members</h2>
             <div className="space-y-2">
               {members.map((member, index) => (
                 <div
                   key={index}
-                  className="flex items-center py-2 px-4 bg-gray-50 rounded"
+                  className="flex items-center py-2 px-4 bg-gray-50 dark:bg-slate-700 rounded"
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mr-4 font-semibold">
-                    {member.profiles?.full_name?.[0] || 'U'}
+                  <div className="w-10 h-10 rounded-full mr-4">
+                    <Avatar name={member.profiles?.full_name} />
                   </div>
-                  <p className="text-gray-900">
+                  <p className="text-slate-800 dark:text-slate-100">
                     {member.profiles?.full_name || 'Unknown User'}
                   </p>
                 </div>
